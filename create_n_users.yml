@@ -1,0 +1,74 @@
+---
+- hosts: distUsers-master
+  user: ubuntu
+  become: yes
+  name: Create n users and deploy authorized users
+  vars:
+    user: testuser
+    local: /Users/james
+    start: 0
+    end:   10
+  tasks:
+
+  - user: name={{ item }} 
+          state=present 
+          group=admin
+          generate_ssh_key=yes 
+          ssh_key_bits=2048 
+          ssh_key_file=.ssh/id_rsa
+          createhome=yes
+    with_sequence: start={{ start }} end={{ end }} format={{ user }}%02x
+
+  - name: Set up authorized users ...
+    shell: cat /home/{{ item }}/.ssh/id_rsa.pub >> /home/{{ item }}/.ssh/authorized_keys
+    with_sequence: start={{ start }} end={{ end }} format={{ user }}%02x
+
+  - name: Copy directory locally ...
+    synchronize: mode=pull
+                 perms=yes
+                 owner=yes
+                 src=/home/{{ item }}
+                 dest={{ local }}/TEMPUSERS
+    with_sequence: start={{ start }} end={{ end }} format={{ user }}%02x
+
+
+
+- hosts: distUsers-slaves
+  user: ubuntu
+  become: yes
+  vars:
+    user: testuser
+    local: /Users/james
+    start: 0
+    end:   10
+  tasks:
+
+  - user: name={{ item }} 
+          state=present 
+          group=admin
+          createhome=no
+    with_sequence: start={{ start }} end={{ end }} format={{ user }}%02x
+
+  - name: Copy local directories to remote servers ...
+    copy: 
+      src: {{ local }}/TEMPUSERS/{{ item }}/
+      dest: /home/{{ item }}/
+    with_sequence: start={{ start }} end={{ end }} format={{ user }}%02x
+
+
+- hosts: localhost
+  user: james
+  become: yes
+  vars:
+    user: testuser
+    local: /Users/james
+    start: 0
+    end:   10
+  tasks:
+
+  - name: Remove local files
+    file: 
+      path: {{ local }}/TEMPUSERS
+      state: absent
+    tags:
+      - latest
