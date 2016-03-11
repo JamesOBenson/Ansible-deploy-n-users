@@ -32,6 +32,12 @@ This script is designed to use Ansible to deploy n number of users on remote use
 
 1. Deletes all of the downloaded home directories
 
+### Notes:
+1. This does transfer public and private keys so for sensitive data be careful. 
+2. This script should be used on users who do not exist already
+3. As always, with anything dealing with home directories, be careful
+4. Similiar to above, I take no responsibility for loss of data.
+
 ##How is this playbook licensed?
 
 It's licensed under the Apache License 2.0. The quick summary is:
