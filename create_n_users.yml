@@ -85,5 +85,3 @@
     file: 
       path: {{ local }}/TEMPUSERS
       state: absent
-    tags:
-      - latest
