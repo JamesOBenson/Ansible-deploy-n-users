@@ -14,16 +14,22 @@ This script is designed to use Ansible to deploy n number of users on remote use
 3. ansible-playbook create_n_users.yml
 
 ##What it will do
-Master:
+###Master:
+
 1. On the master server where you want the users to be created, n users will be created with their ssh keys and home directory's created. 
+
 2. Creates the authorized users file in the .ssh directory
+
 3. Downloads all of the home directories local to where the script is running.  (This is a potential security issue.)
 
-Slave:
+###Slave:
+
 1. Creates n users on the rest of the machines 
+
 2. Copies all of home directories that were stored local to all of the remote slave locations
 
-Local host:
+###Local host:
+
 1. Deletes all of the downloaded home directories
 
 ##How is this playbook licensed?
@@ -32,6 +38,6 @@ It's licensed under the Apache License 2.0. The quick summary is:
 
 > A license that allows you much freedom with the software, including an explicit right to a patent. “State changes” means that you have to include a notice in each file you modified. 
 
-[Pull requests](https://github.com/JamesOBenson/Ansible_deploy_n_users/pulls) and [Github issues](https://github.com/JamesOBenson/Ansible_deploy_n_users/issues) are welcome!
+[Pull requests](https://github.com/JamesOBenson/Ansible-deploy-n-users/pulls) and [Github issues](https://github.com/JamesOBenson/Ansible-deploy-n-users/issues) are welcome!
 
 -- James
