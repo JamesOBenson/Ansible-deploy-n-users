@@ -14,17 +14,16 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-- hosts: distUsers-master
+- hosts: testgroup-master
   user: ubuntu
   become: yes
   name: Create n users and deploy authorized users
   vars:
     user: testuser
     local: /Users/james
-    start: 0
-    end:   10
+    start: 1
+    end:   5
   tasks:
-
   - user: name={{ item }} 
           state=present 
           group=admin
@@ -48,14 +47,14 @@
 
 
 
-- hosts: distUsers-slaves
+- hosts: testgroup-followers
   user: ubuntu
   become: yes
   vars:
     user: testuser
     local: /Users/james
-    start: 0
-    end:   10
+    start: 1
+    end:   5
   tasks:
 
   - user: name={{ item }} 
@@ -66,9 +65,40 @@
 
   - name: Copy local directories to remote servers ...
     copy: 
-      src: {{ local }}/TEMPUSERS/{{ item }}/
+      src: "{{ local }}/TEMPUSERS/{{ item }}/"
       dest: /home/{{ item }}/
+      owner: "{{ item }}"
+      group: admin
     with_sequence: start={{ start }} end={{ end }} format={{ user }}%02x
+
+  - name: Fix permissions - .ssh directory
+    file: 
+      path: /home/{{ item }}/.ssh
+      mode: 0700
+      state: directory
+    with_sequence: start={{ start }} end={{ end }} format={{ user }}%02x
+
+  - name: Fix permissions - id_rsa
+    file: 
+      path: /home/{{ item }}/.ssh/id_rsa
+      mode: 0600
+      state: file
+    with_sequence: start={{ start }} end={{ end }} format={{ user }}%02x
+
+  - name: Fix permissions - id_rsa.pub
+    file: 
+      path: /home/{{ item }}/.ssh/id_rsa.pub
+      mode: 0600
+      state: file
+    with_sequence: start={{ start }} end={{ end }} format={{ user }}%02x
+
+  - name: Disable Strict Host Key Checking in SSH Config
+    lineinfile:
+      dest: /etc/ssh/ssh_config
+      line: "StrictHostKeyChecking no" 
+      insertafter: 'EOF' 
+      state: present
+
 
 
 - hosts: localhost
@@ -77,11 +107,11 @@
   vars:
     user: testuser
     local: /Users/james
-    start: 0
-    end:   10
+    start: 1
+    end:   5
   tasks:
 
   - name: Remove local files
     file: 
-      path: {{ local }}/TEMPUSERS
+      path: "{{ local }}/TEMPUSERS"
       state: absent
